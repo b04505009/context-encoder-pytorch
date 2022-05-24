@@ -57,7 +57,6 @@ def save_args(args, save_path: str):
 def save_dataset_indices(
         save_path: str,
         train_set: Union[CustomSubset, Dict],
-        validation_set: CustomSubset,
         file_name: str = "indices.json",
 ):
     label_file_path = os.path.join(save_path, file_name)
@@ -71,7 +70,6 @@ def save_dataset_indices(
         dataset_indices["train_labeled"] = list(
             map(lambda x: int(x), train_set.indices)
         )
-    dataset_indices["validation"] = list(map(lambda x: int(x), validation_set.indices))
     with open(label_file_path, "w") as file:
         json.dump(dataset_indices, file)
 

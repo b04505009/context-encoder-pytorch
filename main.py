@@ -36,7 +36,7 @@ def main(args, save_path: str):
     transform_dict = get_transform_dict(args)
 
     # Get torch dataset objects from specified dataset
-    train_set, validation_set, test_set = get_datasets(
+    train_set, test_set = get_datasets(
         args.data_dir,
         args.dataset,
         args.num_validation,
@@ -45,14 +45,13 @@ def main(args, save_path: str):
         transform_dict["test"],
         dataset_indices=initial_indices
     )
-    save_dataset_indices(save_path, train_set, validation_set)
+    save_dataset_indices(save_path, train_set)
 
     # Get loaders for the labeled and unlabeled train set as well as the validation and test set
     args.iters_per_epoch = (len(train_set) // args.batch_size) + 1
-    train_loader, validation_loader, test_loader = create_loaders(
+    train_loader, test_loader = create_loaders(
         args,
         train_set,
-        validation_set,
         test_set,
         args.batch_size,
         total_iters=args.iters_per_epoch,
@@ -62,14 +61,12 @@ def main(args, save_path: str):
     # Print and log dataset stats
     logger.info("-------- Starting Unsupervised Context Encoder Training --------")
     logger.info("\t- Train set: {}".format(len(train_set)))
-    logger.info("\t- Validation set: {}".format(len(validation_set)))
     logger.info("\t- Test set: {}".format(len(test_set)))
 
     # Start context encoder training
     train(
         args,
         train_loader,
-        validation_loader,
         test_loader,
         writer,
         save_path=save_path

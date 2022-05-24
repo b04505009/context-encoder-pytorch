@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from datasets.custom_datasets import *
+from datasets.lsun_dataset import LSUN
 
 DATASET_GETTERS = {
     "cifar10": datasets.CIFAR10,
@@ -11,6 +12,7 @@ DATASET_GETTERS = {
     "caltech101": Caltech101,
     "caltech256": Caltech256,
     "ham10000": HAM10000,
+    "lsun": LSUN,
 }
 
 
@@ -62,12 +64,14 @@ def get_datasets(
         The second and third elements are the validation dataset and the test dataset.
     """
     base_set, test_set = get_base_sets(
-        dataset, root_dir, download=download, test_transform=test_transform
+        dataset, root_dir, download=download, train_transform=train_transform, test_transform=test_transform
     )
 
     if is_pct:
         num_validation = int(num_validation * len(base_set))
 
+    if dataset == "lsun":
+        return base_set, test_set
     base_indices = list(range(len(base_set)))
     if dataset_indices is None:
         num_training = len(base_indices) - num_validation
@@ -78,18 +82,19 @@ def get_datasets(
     train_set = CustomSubset(
         base_set, train_indices, transform=train_transform
     )
-    validation_set = CustomSubset(
-        base_set, validation_indices, transform=test_transform
-    )
-
-    return train_set, validation_set, test_set
+    return train_set, test_set
 
 
-def get_base_sets(dataset, root_dir, download=True, test_transform=None):
-    base_set = DATASET_GETTERS[dataset](root_dir, train=True, download=download)
-    test_set = DATASET_GETTERS[dataset](
-        root_dir, train=False, download=download, transform=test_transform
-    )
+
+def get_base_sets(dataset, root_dir, download=True, train_transform=None, test_transform=None):
+    if dataset == "lsun":
+        base_set = DATASET_GETTERS[dataset](root_dir, classes=["church_outdoor_train"], transform=train_transform)
+        test_set = DATASET_GETTERS[dataset](root_dir, classes=["church_outdoor_val"],  transform=test_transform)
+    else:
+        base_set = DATASET_GETTERS[dataset](root_dir, train=True, download=download)
+        test_set = DATASET_GETTERS[dataset](
+            root_dir, train=False, download=download, transform=test_transform
+        )
     return base_set, test_set
 
 

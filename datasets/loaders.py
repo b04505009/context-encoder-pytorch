@@ -109,7 +109,6 @@ def get_reweighted_sampler(targets: List, num_samples: int, replacement: bool = 
 def create_loaders(
     args,
     train_dataset: Dataset,
-    validation_dataset: Dataset,
     test_dataset: Dataset,
     batch_size: int,
     num_workers: int = 0,
@@ -162,13 +161,6 @@ def create_loaders(
         pin_memory=args.pin_memory
     )
 
-    validation_loader = DataLoader(
-        validation_dataset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        shuffle=True,
-        pin_memory=args.pin_memory,
-    )
 
     test_loader = DataLoader(
         test_dataset,
@@ -179,6 +171,5 @@ def create_loaders(
     )
     return (
         train_loader,
-        validation_loader,
         test_loader,
     )
