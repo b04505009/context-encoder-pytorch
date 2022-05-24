@@ -44,6 +44,7 @@ def parse_args():
             "caltech256",
             "stl10",
             "ham10000",
+            "lsun",
         ],
         type=str,
         help="name of dataset",
@@ -153,11 +154,14 @@ def parse_args():
 
     # Context encoder arguments
     parser.add_argument(
-        "--random-masking",
-        dest="random_masking",
-        action="store_true",
-        default=False,
-        help="apply random region masking during training",
+        "--masking",
+        choices=[
+            "central-block", 
+            "random-block",
+            "random-region",],
+        default="central-block",
+        type=str,
+        help="masking mode during training",
     )
     parser.add_argument(
         "--bottleneck",
@@ -168,7 +172,7 @@ def parse_args():
     parser.add_argument(
         "--image-size",
         type=int,
-        default=32,
+        default=128,
         choices=[32, 64, 128],
         help="size of input images",
     )

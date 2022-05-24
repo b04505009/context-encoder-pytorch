@@ -17,7 +17,7 @@ from augmentation.augmentations import get_normalizer
 from eval import evaluate
 from utils.eval import AverageMeterSet
 from utils.misc import save_state
-from utils.train import get_l2_weights, get_random_block_mask, get_random_region_mask, context_encoder_init
+from utils.train import get_l2_weights, get_random_block_mask, get_random_region_mask, context_encoder_init, get_center_block_mask
 from models.model_factory import MODEL_GETTERS
 
 GLOBAL_RANDOM_PATTERN = None
@@ -74,7 +74,7 @@ def weighted_mse_loss(outputs, targets, weights):
     return torch.mean(weights * (outputs - targets).pow(2))
 
 
-def train(args, train_loader, validation_loader, test_loader, writer, **kwargs):
+def train(args, train_loader, test_loader, writer, **kwargs):
     """
     Method for ContextEncoder training of model based on given data loaders and parameters.
 
@@ -104,7 +104,7 @@ def train(args, train_loader, validation_loader, test_loader, writer, **kwargs):
     save_path = kwargs.get("save_path", args.out_dir)
     args.mask_size = int(np.sqrt(args.mask_area) * args.image_size)
 
-    if args.random_masking:
+    if args.masking == "random-region":
         global GLOBAL_RANDOM_PATTERN
         GLOBAL_RANDOM_PATTERN = generate_random_pattern(args.mask_area, args.resolution, args.max_pattern_size)
         out_size = args.image_size
@@ -227,7 +227,12 @@ def train_epoch(
 
     for batch_idx, (samples, _) in enumerate(train_loader):
         samples = samples.to(args.device)
-        if not args.random_masking:
+        if args.masking == "central-block":
+            masked_samples, true_masked_part, mask_coordinates = get_center_block_mask(
+                samples, args.mask_size, args.overlap
+            )
+            masked_region = None
+        elif args.masking == "random-block":
             masked_samples, true_masked_part, mask_coordinates = get_random_block_mask(
                 samples, args.mask_size, args.overlap
             )
@@ -300,7 +305,7 @@ def train_epoch(
     if args.pbar:
         p_bar.close()
 
-    if not args.random_masking:
+    if not args.masking == "random-region":
         recon_samples = samples.clone()
         h, w = mask_coordinates
         recon_samples[:, :, h : h + args.mask_size, w : w + args.mask_size] = outG

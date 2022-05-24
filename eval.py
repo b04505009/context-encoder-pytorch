@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 
 from utils.eval import AverageMeterSet
-from utils.train import get_random_block_mask, get_random_region_mask, get_l2_weights
+from utils.train import get_random_block_mask, get_random_region_mask, get_l2_weights, get_center_block_mask
 
 
 logger = logging.getLogger()
@@ -38,7 +38,12 @@ def evaluate(
     with torch.no_grad():
         for i, (samples, _) in enumerate(data_loader):
             samples = samples.to(args.device)
-            if not args.random_masking:
+            if args.masking == "central-block":
+                masked_samples, true_masked_part, mask_coordinates = get_center_block_mask(
+                    samples, args.mask_size, args.overlap
+                )
+                masked_region = None
+            elif args.masking == "random-block":
                 masked_samples, true_masked_part, mask_coordinates = get_random_block_mask(
                     samples, args.mask_size, args.overlap
                 )
@@ -70,9 +75,11 @@ def evaluate(
                     )
                 )
                 p_bar.update()
+
+    if args.pbar:
         p_bar.close()
 
-    if not args.random_masking:
+    if not args.masking == "random-region":
         recon_samples = samples.clone()
         h, w = mask_coordinates
         recon_samples[:, :, h: h + mask_size, w: w + mask_size] = outG
@@ -124,7 +131,7 @@ if __name__ == '__main__':
         pin_memory=run_args.pin_memory,
     )
 
-    if run_args.random_masking:
+    if args.masking == "random-region":
         out_size = run_args.image_size
     else:
         out_size = run_args.mask_size

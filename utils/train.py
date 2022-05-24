@@ -290,12 +290,12 @@ def get_l2_weights(args, prediction_size: torch.Size, masked_region: torch.Tenso
         loss_weights = torch.empty(prediction_size).fill_(
             args.w_rec * args.overlap_weight_multiplier
         )
-        if not args.random_masking:
+        if not args.masking == "random-region":
             loss_weights[:, :, args.overlap:-args.overlap, args.overlap:-args.overlap] = args.w_rec
         else:
             loss_weights[:, :, masked_region] = args.w_rec
     else:
-        if not args.random_masking:
+        if not args.masking == "random-region":
             loss_weights = torch.ones(prediction_size)
         else:
             loss_weights = torch.zeros(prediction_size)
