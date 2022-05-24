@@ -85,3 +85,8 @@ of reconstructed images to the run folder (if `--save-path` is not specified). A
   year={2016}
 }
 ```
+
+## ECE285 Final Project
+
+1. Put `church_outdoor_train_lmdb` and `church_outdoor_test_lmdb` under `data/`
+2. Run `python main.py --dataset lsun --masking central-block --image-size 128 --num-workers 4 --pbar --pin-memory`
