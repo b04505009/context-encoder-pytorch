@@ -1,0 +1,16 @@
+run 0: original
+   Reconstruction loss: 0.14060533046722412
+run 1: unet
+  Reconstruction loss: 0.09407165199518204
+run 2: unet + w_rec=0.99
+  
+run 3: unet + w_rec=0.995
+  Reconstruction loss: 0.1425395965576172
+run 4: unet + self attention
+  Reconstruction loss: 0.10719945132732392
+run 5: unet + self attention + w_rec=0.995
+  Reconstruction loss: 0.23436273634433746
+run 6: unet + self attention + l1 loss
+  Reconstruction loss: 0.10139735341072083
+run 7: unet + self attention + l1 loss + generator train with full image
+  Reconstruction loss: 0.18394125998020172
